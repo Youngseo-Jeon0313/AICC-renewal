@@ -8,7 +8,7 @@ from services.tasks import random_job
 QUEUE_KEY = "request"
 
 app = Flask(__name__)
-redis = Redis(host='localhost', port=6379, db=0)
+redis = Redis(host='redis', port=6379, db=0)
 
 q = Queue(connection=redis)
 
@@ -76,4 +76,4 @@ def get_requests():
 
 
 if __name__ == '__main__':
-    app.run('0.0.0.0', port=8082, debug=True)
+    app.run('0.0.0.0', port=8000, debug=True)
