@@ -9,13 +9,36 @@ services:
       - FLASK_ENV=production
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=aicc
+      - MYSQL_USER=rootuser
+      - MYSQL_PASSWORD=rootpw
     depends_on:
       - redis
       - kong
+      - mysql
     restart: always
     networks:
       - app-network
       - kong-net
+      - mysql-net
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpw
+      - MYSQL_USER=rootuser
+      - MYSQL_PASSWORD=rootpw
+      - MYSQL_DATABASE=aicc
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - mysql-net
+    restart: always
 
   redis:
     image: redis:latest
@@ -137,8 +160,11 @@ networks:
     driver: bridge
   kong-net:
     driver: bridge
+  mysql-net:
+    driver: bridge
 
 volumes:
   redis-data:
   kong-postgres-data:
-  konga-data: 
+  konga-data:
+  mysql-data: 
