@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: flask run --host=0.0.0.0 --port=8001
+    volumes:
+      - .:/app
+    ports:
+      - "8001:8001"
+    environment:
+      - FLASK_APP=main.py
+      - FLASK_ENV=development
+      - CELERY_BROKER_URL=redis://redis:6380/0
+      - CELERY_RESULT_BACKEND=redis://redis:6380/0
+      - DB_HOST=mysql
+      - DB_USER=rootuser
+      - DB_PASSWORD=rootpw
+      - DB_NAME=aicc
+    depends_on:
+      - redis
+      - mysql
+
+  redis:
+    image: redis:latest
+    command: redis-server --port 6380
+    ports:
+      - "6380:6380"
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_USER=rootuser
+      - MYSQL_ROOT_PASSWORD=rootpw
+      - MYSQL_DATABASE=aicc
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  mysql_data: 
