@@ -44,26 +44,27 @@ class EnqueueJob(Resource):
             priority = int(time.time() * 1000)
 
             is_stt_completed = get_record_status(record_id)
+            
             if is_stt_completed == 1:
                 return {'status': 'success', 'message': get_text_from_record(record_id)}
-                
-            if redis.zscore(SET_KEY, record_id) is not None:
-                return {'status': 'error', 'message': f'record_id {record_id}는 이미 큐에 존재합니다'}, 400
+            else:    
+                if redis.zscore(SET_KEY, record_id) is not None:
+                    return {'status': 'error', 'message': f'record_id {record_id}는 이미 큐에 존재합니다'}, 400
 
-            pipe = redis.pipeline()
-            pipe.zadd(SET_KEY, {record_id: priority}) # key: record_id, value: priority(timestamp)
-            pipe.rpush(QUEUE_KEY, record_id)
-            pipe.execute()
+                pipe = redis.pipeline()
+                pipe.zadd(SET_KEY, {record_id: priority}) # key: record_id, value: priority(timestamp)
+                pipe.rpush(QUEUE_KEY, record_id)
+                pipe.execute()
 
-            queue_length = redis.llen(QUEUE_KEY)
-            position = redis.lpos(QUEUE_KEY, record_id)
+                queue_length = redis.llen(QUEUE_KEY)
+                position = redis.lpos(QUEUE_KEY, record_id)
 
-            return {
-                'status': 'success',
-                'message': f'작업 {record_id}에 대한 STT를 진행합니다. 잠시만 기다려 주세요.',
-                'position': position + 1,
-                'queue_length': queue_length
-            }
+                return {
+                    'status': 'success',
+                    'message': f'작업 {record_id}에 대한 STT를 진행합니다. 잠시만 기다려 주세요.',
+                    'position': position + 1,
+                    'queue_length': queue_length
+                }
         
         except Exception as e:
             return {'status': 'error', 'message': str(e)}, 500
