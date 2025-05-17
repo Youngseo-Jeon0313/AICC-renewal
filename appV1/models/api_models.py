@@ -10,3 +10,7 @@ def create_api_models(api):
     job_model = api.model('Job', {
         'record_id': fields.String(required=True, description='녹취록 ID'),
     })
+
+    return {
+        'job_model': job_model,
+    }
