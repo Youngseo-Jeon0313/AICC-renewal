@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from redis import Redis
+from flask_restx import Api, Resource, fields
 from rq import Queue
 from flasgger import Swagger, swag_from
 import time
@@ -9,33 +10,12 @@ from services.tasks import random_job
 QUEUE_KEY = "request"
 
 app = Flask(__name__)
-redis = Redis(host='redis', port=6379, db=0)
+api = Api(app, version='1.0', title='STT 처리 시스템 API',
+          description='Flask 기반의 STT 처리 시스템 API')
 
-# Swagger 설정
-swagger_config = {
-    "headers": [],
-    "specs": [
-        {
-            "endpoint": 'apispec',
-            "route": '/apispec.json',
-            "rule_filter": lambda rule: True,
-            "model_filter": lambda tag: True,
-        }
-    ],
-    "static_url_path": "/flasgger_static",
-    "swagger_ui": True,
-    "specs_route": "/docs"
-}
-
-swagger_template = {
-    "info": {
-        "title": "STT 작업 처리 API",
-        "description": "음성 파일을 텍스트로 변환하는 STT 작업을 처리하는 API",
-        "version": "1.0.0"
-    }
-}
-
-swagger = Swagger(app, config=swagger_config, template=swagger_template)
+# 네임스페이스 정의
+queue_ns = api.namespace('queue', description='큐 작업 관련 API')
+text_ns = api.namespace('text', description='텍스트 생성 관련 API')
 
 # Redis 연결
 redis_client = redis.Redis(

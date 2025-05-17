@@ -3,4 +3,4 @@ flask
 redis
 rq
 requests
-flasgger
+flask-restx
