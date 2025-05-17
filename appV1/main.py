@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from redis import Redis
 from rq import Queue
+from flasgger import Swagger, swag_from
 import time
 from services.tasks import random_job
 
@@ -10,7 +11,40 @@ QUEUE_KEY = "request"
 app = Flask(__name__)
 redis = Redis(host='redis', port=6379, db=0)
 
-q = Queue(connection=redis)
+# Swagger 설정
+swagger_config = {
+    "headers": [],
+    "specs": [
+        {
+            "endpoint": 'apispec',
+            "route": '/apispec.json',
+            "rule_filter": lambda rule: True,
+            "model_filter": lambda tag: True,
+        }
+    ],
+    "static_url_path": "/flasgger_static",
+    "swagger_ui": True,
+    "specs_route": "/docs"
+}
+
+swagger_template = {
+    "info": {
+        "title": "STT 작업 처리 API",
+        "description": "음성 파일을 텍스트로 변환하는 STT 작업을 처리하는 API",
+        "version": "1.0.0"
+    }
+}
+
+swagger = Swagger(app, config=swagger_config, template=swagger_template)
+
+# Redis 연결
+redis_client = redis.Redis(
+    host=os.getenv('REDIS_HOST', 'redis'),
+    port=int(os.getenv('REDIS_PORT', 6379)),
+    decode_responses=True
+)
+
+q = Queue(connection=redis_client)
 
 @app.route('/job_result/<job_id>', methods=['GET'])
 def poll_result(job_id):
