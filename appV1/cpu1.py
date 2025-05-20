@@ -13,6 +13,8 @@ redis_client = redis.Redis(
     decode_responses=True
 )
 
+SET_KEY = "request_set"
+
 def process_task(record_id: int):
     task_data = get_record_from_db(record_id)
     # record_duration을 초 단위의 정수로 변환
@@ -51,18 +53,14 @@ def main():
     print("CPU1 worker started")
     while True:
         try:
-            task_json = redis_client.rpop('request_queue')
+            task = redis_client.zpopmin('request_set', count=1)
 
-            if task_json:
-                print(task_json)
-                # 정수형 record_id를 직접 처리
-                record_id = int(task_json)
+            if task:
+                record_id = int(task[0][0])
                 print(f"CPU1 processing task: {record_id}")
 
                 result = process_task(record_id)
                 save_result(result)
-                # request_set에서도 제거
-                redis_client.zrem('request_set', record_id)
                 print(f"CPU1 completed task: {record_id}")
 
                 # 바로 다음 작업 시도

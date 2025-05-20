@@ -8,8 +8,7 @@ from models.api_models import create_api_models
 from repositories.records import get_text_from_record, get_record_status
 
 # Redis keys
-QUEUE_KEY = "request_queue"  # List 자료구조 - 큐 역할
-SET_KEY = "request_set"    # Set 자료구조 - 중복 체크용
+SET_KEY = "request_set" # Sored set 자료구조
 
 app = Flask(__name__)
 api = Api(app, version='1.0', title='STT 처리 시스템 API',
@@ -53,17 +52,14 @@ class EnqueueJob(Resource):
 
                 pipe = redis.pipeline()
                 pipe.zadd(SET_KEY, {record_id: priority}) # key: record_id, value: priority(timestamp)
-                pipe.rpush(QUEUE_KEY, record_id)
-                pipe.execute()
 
-                queue_length = redis.llen(QUEUE_KEY)
-                position = redis.lpos(QUEUE_KEY, record_id)
+                position = redis.zrank(SET_KEY, record_id)
+
 
                 return {
                     'status': 'success',
                     'message': f'작업 {record_id}에 대한 STT를 진행합니다. 잠시만 기다려 주세요.',
                     'position': position + 1,
-                    'queue_length': queue_length
                 }
         
         except Exception as e:
