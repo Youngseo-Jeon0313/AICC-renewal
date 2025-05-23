@@ -32,3 +32,18 @@ def get_record_status(task_id):
     cursor.close()
     conn.close()
     return status
+
+def update_record_status(task_id, stt_result):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE records SET stt_result = %s, is_stt_completed = 1 WHERE id = %s",
+        (stt_result, task_id)
+    )    
+    conn.commit()
+    success = cursor.rowcount > 0
+
+    cursor.close()
+    conn.close()
+    
+    return success
