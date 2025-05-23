@@ -20,6 +20,35 @@ services:
     depends_on:
       - redis
       - mysql
+      - celery_worker
+
+  celery_worker:
+    build: .
+    command: celery -A main.celery worker --loglevel=info
+    volumes:
+      - .:/app
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6380/0
+      - CELERY_RESULT_BACKEND=redis://redis:6380/0
+      - DB_HOST=mysql
+      - DB_USER=rootuser
+      - DB_PASSWORD=rootpw
+      - DB_NAME=aicc
+    depends_on:
+      - redis
+      - mysql
+
+  celery_flower:
+    build: .
+    command: celery -A main.celery flower --port=5555
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6380/0
+      - CELERY_RESULT_BACKEND=redis://redis:6380/0
+    depends_on:
+      - redis
+      - celery_worker
 
   redis:
     image: redis:latest

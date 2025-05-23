@@ -5,3 +5,5 @@ mysql-connector-python
 flask
 flask-restx
 requests
+flower
+celery
