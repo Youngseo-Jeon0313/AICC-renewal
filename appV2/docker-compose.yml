@@ -23,9 +23,24 @@ services:
     networks:
       - app-network
 
-  celery_worker:
+  celery_worker1:
     build: .
-    command: celery -A main.celery worker --loglevel=info
+    command: celery -A celery_config.celery worker -n worker1 -l info --concurrency=1
+    volumes:
+      - .:/app
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6380/0
+      - CELERY_RESULT_BACKEND=redis://redis:6380/0
+      - DB_HOST=mysql
+      - DB_USER=rootuser
+      - DB_PASSWORD=rootpw
+      - DB_NAME=aicc
+    networks:
+      - app-network
+
+  celery_worker2:
+    build: .
+    command: celery -A celery_config.celery worker -n worker2 -l info --concurrency=1
     volumes:
       - .:/app
     environment:
@@ -43,7 +58,7 @@ services:
 
   celery_flower:
     build: .
-    command: celery -A main.celery flower --port=5555
+    command: celery -A celery_config.celery flower --port=5555
     ports:
       - "5555:5555"
     environment:
