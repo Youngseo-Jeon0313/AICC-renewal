@@ -3,7 +3,7 @@ from repositories.records import get_record_from_db, update_record_status
 from services.text_generator import TextGenerator
 from time import sleep
 
-@shared_task(name='cpu1.process_task')
+@shared_task(name='process_task', queue='cpu1')
 def process_task(record_id: int):
     """CPU1에서 STT 처리를 수행하는 Celery Worker"""
     try:
