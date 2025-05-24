@@ -63,11 +63,12 @@ services:
   mysql:
     image: mysql:8.0
     environment:
-      - MYSQL_ROOT_USER=rootuser
       - MYSQL_ROOT_PASSWORD=rootpw
       - MYSQL_DATABASE=aicc
+      - MYSQL_USER=rootuser
+      - MYSQL_PASSWORD=rootpw
     ports:
-      - "3306:3306"
+      - "3308:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
@@ -78,4 +79,4 @@ networks:
     driver: bridge
 
 volumes:
-  mysql_data: 
+  mysql_data:
