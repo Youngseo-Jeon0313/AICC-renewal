@@ -15,6 +15,6 @@ enable_utc = True
 
 celery = Celery(
     'stt_tasks',
-    broker=os.getenv('CELERY_BROKER_URL', 'redis://redis:6380/0'),
-    backend=os.getenv('CELERY_RESULT_BACKEND', 'redis://redis:6380/0')
+    broker=broker_url,
+    backend=result_backend,
 )
